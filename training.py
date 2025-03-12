@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
+import numpy as np
 from resnet import *
 from utils import get_paths
 
@@ -26,7 +27,8 @@ def load_data(train_batch_size=128, test_batch_size=100, augment=False):
     if augment:
         transform_train = transforms.Compose([
             transforms.RandomHorizontalFlip(),      # Random horizontal flip
-            transforms.RandomCrop(32, padding=4),   # Random cropping
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1), shear=10),  # Random cropping
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))    # Normalize using CIFAR-10 mean and std
         ]) 
@@ -78,31 +80,87 @@ def save_model(model, epoch, accuracy):
         print(f'Model checkpoint saved as {filename}')
 
 
+def rand_bbox(size, lam):
+    # size: (batch_size, channels, height, width)
+    W = size[3]
+    H = size[2]
+    cut_rat = np.sqrt(1. - lam)
+    cut_w = int(W * cut_rat)
+    cut_h = int(H * cut_rat)
+    
+    # Uniformly sample the center of the bounding box
+    cx = np.random.randint(W)
+    cy = np.random.randint(H)
+    
+    # Calculate the coordinates of the bounding box
+    bbx1 = np.clip(cx - cut_w // 2, 0, W)
+    bby1 = np.clip(cy - cut_h // 2, 0, H)
+    bbx2 = np.clip(cx + cut_w // 2, 0, W)
+    bby2 = np.clip(cy + cut_h // 2, 0, H)
+    
+    return bbx1, bby1, bbx2, bby2
+
+
+def cutmix_data(x, y, alpha=1.0):
+    # x: batch of images, y: batch of labels
+    indices = torch.randperm(x.size(0))
+    shuffled_x = x[indices]
+    shuffled_y = y[indices]
+    
+    # Sample lambda from Beta distribution
+    lam = np.random.beta(alpha, alpha)
+    
+    # Get the bounding box coordinates
+    bbx1, bby1, bbx2, bby2 = rand_bbox(x.size(), lam)
+    
+    # Replace the region in x with the corresponding region from shuffled_x
+    x[:, :, bby1:bby2, bbx1:bbx2] = shuffled_x[:, :, bby1:bby2, bbx1:bbx2]
+    
+    # Adjust lambda to match the pixel ratio exactly
+    lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (x.size()[-1] * x.size()[-2]))
+    
+    return x, y, shuffled_y, lam
+
+
 
 
 def train(model, trainloader, loss_func, optimizer, device):
     model.train()
-    train_loss = 0
-    correct = 0
+    train_loss = 0.0
+    correct = 0.0  # Use float for weighted counting
     total = 0
 
     for batch_idx, (images, labels) in enumerate(trainloader):
-        images, labels = images.to(device), labels.to(device)
-        optimizer.zero_grad()   # Reset gradients
-        outputs = model(images)             # Forward pass
-        loss = loss_func(outputs, labels)   # Compute loss
+        images = images.to(device)
+        labels = labels.to(device)
+        optimizer.zero_grad()  # Reset gradients
 
-        loss.backward()     # Backward pass
-        optimizer.step()    # Update weights
+        # Decide whether to use CutMix
+        use_cutmix = np.random.rand() < 0.5
+        if use_cutmix:
+            images, label_a, label_b, lam = cutmix_data(images, labels)
+            outputs = model(images)
+            loss = lam * loss_func(outputs, label_a) + (1 - lam) * loss_func(outputs, label_b)
+        else:
+            outputs = model(images)
+            loss = loss_func(outputs, labels)
 
+        loss.backward()         # Backward pass
+        optimizer.step()        # Update weights
         train_loss += loss.item()   # Track total loss
+        total += labels.size(0)
 
         _, predicted = outputs.max(1)
-        correct += (predicted == labels).sum().item()
-        total += labels.size(0)
-    
+        if use_cutmix:
+            # For CutMix, compute accuracy as a weighted average of the two label sets
+            correct_a = (predicted == label_a).sum().item()
+            correct_b = (predicted == label_b).sum().item()
+            correct += lam * correct_a + (1 - lam) * correct_b
+        else:
+            correct += (predicted == labels).sum().item()
+
     train_loss /= len(trainloader)
-    accuracy = 100 * correct / total
+    accuracy = 100.0 * correct / total
 
     return accuracy, train_loss
 
