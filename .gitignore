@@ -1,0 +1,32 @@
+
+venv/
+__pycache__
+.DS_store
+
+# checkpoint models
+checkpoints/
+
+# prediction CSV
+predictions_history/
+
+# model history csvs
+history/
+
+
+# Model output folders
+model_checkpoint_history/
+predictions_history/
+training_history/
+
+
+
+
+work_in_progress/
+
+# exclude tar file from dataset for git
+cifar-10-python.tar.gz
+
+resnet_example.py
+
+
+.env

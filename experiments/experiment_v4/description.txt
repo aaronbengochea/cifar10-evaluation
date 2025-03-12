@@ -1,0 +1,17 @@
+# Model parameters
+MODEL_NAME = 'ResNet40_v1'
+NUM_STARTING_INPUT_CHANNELS = 3
+NUM_BLOCKS_PER_LAYER = [5, 7, 4, 3]
+NUM_CHANNELS_PER_LAYER = [32, 64, 128, 256]
+KERNEL_SIZE_PER_LAYER = [3, 3, 3, 3]
+SKIP_KERNEL_SIZE_PER_LAYER = [1, 1, 1, 1]
+
+
+# Training parameters
+EPOCHS = 250
+TRAIN_BATCH_SIZE = 128
+TEST_BATCH_SIZE = 100
+AUGMENT = True
+
+OPTIMIZER = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+SCHEDULER = optim.lr_scheduler.CosineAnnealingLR(OPTIMIZER, T_max=EPOCHS)

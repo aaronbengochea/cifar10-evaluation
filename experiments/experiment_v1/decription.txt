@@ -1,0 +1,16 @@
+# Model parameters
+MODEL_NAME = 'ResNet_v1'
+NUM_STARTING_INPUT_CHANNELS = 3
+NUM_BLOCKS_PER_LAYER = [1, 1, 1, 1]
+NUM_CHANNELS_PER_LAYER = [64, 128, 256, 512]
+KERNEL_SIZE_PER_LAYER = [3, 3, 3, 3]
+SKIP_KERNEL_SIZE_PER_LAYER = [1, 1, 1, 1]
+
+# Training parameters
+EPOCHS = 150
+TRAIN_BATCH_SIZE = 128
+TEST_BATCH_SIZE = 100
+AUGMENT = True
+
+OPTIMIZER = optim.Adam(model.parameters(), lr=0.1, weight_decay=1e-4)
+SCHEDULER = optim.lr_scheduler.ReduceLROnPlateau(OPTIMIZER, mode='max', factor=0.1, patience=5)
