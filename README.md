@@ -23,15 +23,18 @@ The study focused on 3 types of ResNets: Shallow, Medium-Depth, and Deep ResNets
 - **Parameter Count:** `4.99M`
 
 ### Training Parameters
-- **Epochs:** `250`
+- **Epochs:** `310`
 - **Augmentations:** `True`
 - **Optimizer:** `SGD(lr=0.1, momentum=0.9, weight_decay=1e-4)`
 - **Scheduler:** `CosineAnnealingLR(Tmax=250)`
 
 ### Training & Performance
-- **Test Set Accuracy:** `95.32%`
-- **Hidden Test Set Accuracy:** `84.97%`
-- **Optimal model found at:** `240/250 epoch`
+- **Train Set Avg Loss** `0.3973`
+- **Test Set Avg Loss** `0.1440`
+- **Train Set Accuracy:** `86.22%`
+- **Test Set Accuracy:** `96.01%`
+- **Hidden Test Set Accuracy:** `85.095%`
+- **Optimal model found at:** `305/310 epoch`
 
 ## Directory Details
 - `data` - stores the CIFAR10 training and test data locally
