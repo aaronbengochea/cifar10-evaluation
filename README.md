@@ -24,9 +24,9 @@ The study focused on 3 types of ResNets: Shallow, Medium-Depth, and Deep ResNets
 
 ### Training Parameters
 - **Epochs:** `310`
-- **Augmentations:** `True`
+- **Regulerization:** `RandomHorizontalFlip, `
 - **Optimizer:** `SGD(lr=0.1, momentum=0.9, weight_decay=1e-4)`
-- **Scheduler:** `CosineAnnealingLR(Tmax=250)`
+- **Scheduler:** `CosineAnnealingLR(Tmax=Epochs)`
 
 ### Training & Performance
 - **Train Set Avg Loss** `0.3973`
