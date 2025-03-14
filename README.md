@@ -47,6 +47,6 @@ The study focused on 3 types of ResNets: Shallow, Medium-Depth, and Deep ResNets
 - `resnet.py` - contains the implementation of the ResNet, and BasicBlock classes
 - `training.py` - contains the implementation of the training loop
 - `inference.py` - contains the implementation of the inference loop using the hidden competition dataset and all checkpoint models
-- `findings.pdf` - A comprehensive research report that captures our methodology, experiments, and key learnings from training various ResNet architectures on CIFAR-10
+- `research.pdf` - A comprehensive research report that captures our methodology, experiments, and key learnings from training various ResNet architectures on CIFAR-10
 
 
