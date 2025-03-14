@@ -14,7 +14,7 @@ _, DATASET_PATH, SAVED_MODELS_PATH, SAVED_PREDICTIONS_PATH, _ = get_paths()
 
 def load_data():
     # Load inference test dataset
-    print('Loading data...')
+    print('<----- Loading Competition Hidden Testset ----->')
     with open(DATASET_PATH, 'rb') as f:
         data = pickle.load(f, encoding='bytes')
     test_images = data[b'data'] # Extract images
@@ -43,7 +43,7 @@ def load_model(filename, device):
         raise FileNotFoundError(f'{filename} not found in {SAVED_MODELS_PATH}')
 
     # Load model
-    print(f'Loading model...')
+    print(f'<----- Loading Checkpoint Model ----->')
     model = torch.load(f'{SAVED_MODELS_PATH}/{filename}', map_location=device, weights_only=False)
     model.to(device)
 
@@ -58,19 +58,19 @@ def save_predictions(predictions, filename):
     filename = filename.replace('.pth', '.csv')
     df = pd.DataFrame({'ID': range(len(predictions)), 'Label': predictions})
     df.to_csv(f'{SAVED_PREDICTIONS_PATH}/{filename}', index=False)
-    print(f'Predictions saved as {filename}')
+    print(f'Inference results saved as {filename}')
 
 
 def inference(model, test_images, device):
     model.eval()
     test_images = test_images.to(device)
 
-    print('Running inference...')
+    print('<----- Perfoming Inference ----->')
     with torch.no_grad():
         outputs = model(test_images)
-        _, predicted = outputs.max(1)   # Get predicted class
+        _, predicted = outputs.max(1)   
 
-    return predicted.cpu().numpy()  # Convert to NumPy array
+    return predicted.cpu().numpy()  
 
 
 def main(filename=None):
@@ -95,18 +95,11 @@ def main(filename=None):
 
     # Run inference and save predictions
     for filename in filenames:
-        # Load model
         model = load_model(filename, device)
-
-        # Run inference
         predictions = inference(model, test_images, device)
-
-        # Save predictions
         save_predictions(predictions, filename)
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except (FileNotFoundError, NameError) as e:
-        print(f'ERROR: {e}')
+    main()
+    
